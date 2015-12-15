@@ -1,0 +1,308 @@
+---------
+show databases
+show dbs
+---------
+use  test
+---------
+show tables
+show collections
+---------
+mongo中数据库是隐式创建
+---------
+显式创建
+db.createCollection('user') 一定要use以后用
+---------
+mongo 就是文档的集合
+db.user.insert({name:'李四'})
+db.user.insert({name:'help',intro:{name:'hi',age:18}})
+db.user.find()
+db.goods.insert({name:'nokia',price:250})隐式创建
+--------
+db.user.drop（）
+db.dropDatabase()
+--------curd---------
+增
+mongodb存储的是文档，文档是json格式对象
+一篇文档
+db.stu.insert({name:'lilei'})
+新增id
+数组
+db.stu.insert({name:{x:l,m:sm},jl:['kill','someone']})
+多个文档
+db.stu.insert([{sn:001,name:'lilei'},{sn:002,mame:'hmm'},{sn:003,name:18}])
+
+删
+删除sn属性值为001的值
+db.stu.remove({sn:'001'})
+db.集合.remove(查询表达式，选项)
+选项true，只删除一行
+查询表达式是json对象
+查询表达式匹配的行将被删掉
+如果不写查询表达式，删除collections所有文档
+删除stu中属性为m文档只删除一行
+
+改
+db.集合.update（查询表达式，新值，选项)
+改谁
+改成啥样
+操作选项---可选参数
+db.stu.update({name:'wl'},{name:'wl'})全部替换文档新文档替换了旧文档
+修改指定文档用$set
+db.stu.update({name:'zf'},{$set:{name:'ypx'}})
+$unset删除某个列
+$rename重命名某个列
+$inc 增长某个列
+$setOnInsert 当upert为true发生了insert操作时可以补充字段
+
+options作用
+{upsert：true/false，multi：true/false}
+db.stu.update({age:518}，{$set:{name:'gaha'}})
+multi 修改多行
+找到匹配的默认只修改1行，如果想修改多行，使用multi选项
+db.stu.update({age:518},{}$set:{name:'cao'},{multi:true})
+upsert 如果没有匹配行进行插入
+
+
+查询
+db.集合.find(查询表达式，查询的列)；
+db.stu.find()查询所有文档，所有内容
+
+db.stu.find({},{name：1})查询所有文档name属性
+
+db.stu.find({},{name:1,_id：0}) 查询所有文档name属性不查询id属性
+
+db.stu.find({name:'sj'},{name:1,_id：0})
+------------------
+oracle中数据导入mongo中
+db.oracle.find({},{_id:0,ename:1})
+查询表达式
+$ne    !=
+作用--查询filed列的值不等于value的文档
+{field：{$ne:value}}
+$gt    >
+$gte   >=
+$lt    <
+$lte   <=
+$in    in
+db.oracle.find({sal:{$in:[800,1500]}},{_id:0,sal:1})
+$nin   not in
+
+db.oracle.find({$or:[{sal:{$gte:1600}},{dept:20}]},{_id:0,ename:1,deptno:1,sal:1})
+$or
+$and
+$not
+$nor既不是也不是
+db.oracle.find({$nor:[{deptno:20},{deptno:30}]},{_id:0,ename:1,deptno:1})
+
+
+
+$exist 列存在
+查询有xx属性的行
+db.oracle.insert({name:'yxm',age:18,deptno:40})
+WriteResult({ "nInserted" : 1 })
+db.oracle.find({age:{$exists:1}})
+{ "_id" : ObjectId("566e642b4c89eb1ef858fbd8"), "name" : "yxm", "age" : 18, "deptno" : 40 }
+db.oracle.remove({age:{$exists:1}})删除含有。。列的数据
+$mod  求余，余数为x的
+db.oracle.find({sal:{$mod:[3,0]}},{_id:0,ename:1,sal:1})
+
+$type 类型判断
+db.oracle.find({age:{$type:2}})
+{ "_id" : ObjectId("566e67534c89eb1ef858fbdc"), "name" : "kitty", "age" : "19" }
+db.oracle.find({age:{$type:1}})
+{ "_id" : ObjectId("566e67444c89eb1ef858fbdb"), "name" : "hello", "age" : 19 }
+mongodb允许我们按照类型来刷选
+
+double 1
+string 2
+object 3
+array  4
+binnary data 5
+object id 7
+boolean 8
+date 9
+null 10
+$all 数组单元都要匹配
+> db.stu.find()
+{ "_id" : ObjectId("566e691e4c89eb1ef858fbdd"), "name" : "lily", "hobby" : [ "a", "b", "c" ] }
+{ "_id" : ObjectId("566e69654c89eb1ef858fbde"), "name" : "wang", "hobby" : [ "b", "c", "e" ] }
+> db.stu.find({hobby:{$all:['b','c']}})
+{ "_id" : ObjectId("566e691e4c89eb1ef858fbdd"), "name" : "lily", "hobby" : [ "a", "b", "c" ] }
+{ "_id" : ObjectId("566e69654c89eb1ef858fbde"), "name" : "wang", "hobby" : [ "b", "c", "e" ] }
+> db.stu.find({hobby:{$all:['b','c','e']}})
+{ "_id" : ObjectId("566e69654c89eb1ef858fbde"), "name" : "wang", "hobby" : [ "b", "c", "e" ] }
+
+补充：不建议用
+$where(把数据转化为json对象，再带入表达式，效率低)，不用where不用转换
+db.oracle.find({$where:'this.sal>1500'},{_id:0,ename:1,sal:1})
+db.oracle.find({$where:'this.sal>1500 && this.sal<2500'},{_id:0,ename:1,sal:1,deptno:1})
+{ "ename" : "ALLEN", "sal" : 1600, "deptno" : 30 }
+{ "ename" : "CLARK", "sal" : 2450, "deptno" : 10 }
+db.oracle.find({$where:'this.sal>1500 && this.sal<2500 || this.deptno==20'},{_id:0,ename:1,sal:1,deptno:1})
+
+$regex
+> db.oracle.find({ename:{$regex:/^S.*/}},{_id:0,ename:1})
+{ "ename" : "SMITH" }
+{ "ename" : "SCOTT" }
+--------------------------------------------------
+底层用的js引擎，用js语句就可以操作
+JS循环
+for(var i=0;i<10;i++) {
+... db.test.insert({_id:i+1,title:'hello',content:'aa'+i});
+... };
+WriteResult({ "nInserted" : 1 })
+ db.test.find().count()
+12
+--------
+游标
+不是查询结果，而是擦汗寻的返回资源（接口）
+通过接口可以逐条读取，通过资源可以一行一行的读
+文件信息都是以bson格式存储在磁盘中（）
+能游动，能标注
+
+var cursor=db.集合.find(query,projection);
+Cursor.hasNext() 判断游标是够已经娶到尽头
+Cursor.Next() 取出游标的下一个单元
+
+> var mcusor=db.test.find({_id:{$lte:5}})
+> print(mcusor.next())
+[object Object]
+> printjson(mcusor.next())
+{ "_id" : 2, "title" : "hello", "content" : "aa1" }
+----------------------------------------------
+while循环游标
+var mycursor=db.test.find({_id:{$lte:8}})
+while(mycursor.hasNext()) { printjson(mycursor.next()) }
+-----------------------------------------------------
+for循环游标
+for(var mycursor=db.test.find({_id:{$lte:4}}) ;mycursor.hasNext(); ) { printjson(mycursor.next()) }
+-----------------------------------------------------
+for Each
+cursor.forEach(回调函数)
+ var mcursor=db.test.find({_id:{$lte:4}})
+ mcursor.forEach(function(obj){printjson(obj)})
+
+> var cor=db.test.find({_id:{$lte:4}})
+> cor.forEach(function(obj){print('your id is '+obj._id)})
+your id is 1
+your id is 2
+your id is 3
+your id is 4
+
+--------------------------------------------
+游标在分页中的使用
+比如查询100000跳过100页取10行
+一般我们假设每页n行，当前页尾page页
+我们需要跳过前（page-1）*N行再取n行
+mongo中使用skip和limit函数实现
+
+> var cor=db.test.find().skip(9)
+> cor.forEach(function(obj){printjson(obj)})
+{ "_id" : 10, "title" : "hello", "content" : "aa9" }
+> var cor=db.test.find().skip(3)
+> cor.forEach(function(obj){printjson(obj)})
+{ "_id" : 4, "title" : "hello", "content" : "aa3" }
+{ "_id" : 5, "title" : "hello", "content" : "aa4" }
+{ "_id" : 6, "title" : "hello", "content" : "aa5" }
+{ "_id" : 7, "title" : "hello", "content" : "aa6" }
+{ "_id" : 8, "title" : "hello", "content" : "aa7" }
+{ "_id" : 9, "title" : "hello", "content" : "aa8" }
+{ "_id" : 10, "title" : "hello", "content" : "aa9" }
+
+查询结果中跳过前3行
+
+查询2页，每页3条
+> var aa=db.test.find().skip(2).limit(3)
+> aa.forEach(function(obj){printjson(obj)})
+{ "_id" : 3, "title" : "hello", "content" : "aa2" }
+{ "_id" : 4, "title" : "hello", "content" : "aa3" }
+{ "_id" : 5, "title" : "hello", "content" : "aa4" }
+
+
+直接调用
+> db.test.find().skip(3).limit(2)
+{ "_id" : 4, "title" : "hello", "content" : "aa3" }
+{ "_id" : 5, "title" : "hello", "content" : "aa4" }
+
+toArray() 以数组方式显示
+> var aa=db.test.find().skip(2).limit(3)
+> aa.toArray() 把所有行以对象形式存储内存里（数据量小时候用）
+[
+        {
+                "_id" : 3,
+                "title" : "hello",
+                "content" : "aa2"
+        },
+        {
+                "_id" : 4,
+                "title" : "hello",
+                "content" : "aa3"
+        },
+        {
+                "_id" : 5,
+                "title" : "hello",
+                "content" : "aa4"
+        }
+]
+
+> var aa=db.test.find().skip(2).limit(4)
+> printjson(aa.toArray()[3])
+{ "_id" : 6, "title" : "hello", "content" : "aa5" }
+
+-----------------------------------------
+用户管理
+在mongodb中有一个admin库，涉及到服务器配置层面操作，先要切换到admin数据
+use admin 相当于管理员模式
+
+mongodb用户是以数据库为单位建立的，每个数据库有自己的管理员
+
+我们在设置用户时候需先在admin数据库下建立管理员--这个管理员相当于超级管理员
+
+添加用户db.addUser('用户名'，'密码'，是否只读)
+mongodb3.2没有上面那个命令。用下面的命令
+db.createUser({user:'sa',pwd:'passwd',roles:['readWrite','dbAdmin']})
+Successfully added user: { "user" : "sa", "roles" : [ "readWrite", "dbAdmin" ] 
+注意：添加用户后我们能再次退出后登陆，依然可以直接登陆数据库？
+原因：mongodb启动时候，默认不需要要验证，类似mysql的--skip-grant-table
+要让用户生效，需要启动服务时候指定--auth选项
+杀进程后再重启加参数
+--------------------------------------------
+connecting to: 127.0.0.1/admin
+> show tables
+2015-12-15T10:35:56.696+0800 E QUERY    Error: listCollections failed: {
+        "ok" : 0,
+        "errmsg" : "not authorized on admin to execute command { listCollections: 1.0 }",
+        "code" : 13
+}
+说明验证成功
+> use admin
+switched to db admin
+> db.auth('sa','passwd')   认证
+1
+可以给指定数据库加用户
+---------------这一块是有点问题的3.2，具体可以参照备注---------------------------
+http://ibruce.info/2015/03/03/mongodb3-auth/
+
+修改密码
+> use test
+switched to db test
+> db.auth('test','test')
+1
+> db.changeUserPassword('test','20110930')
+> db.auth('test','20110930')
+1
+
+删除用户
+db.removeUser('test')
+
+
+
+
+
+
+
+
+
+
+
+
