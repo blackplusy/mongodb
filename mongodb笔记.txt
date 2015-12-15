@@ -47,3 +47,36 @@ db.test.update{{aa:18},{$addToSet:{test:{$each:["hello",
 "world"]}}}}
 $pop删除数组中值
 db.test.update({aa:"test1"},{$pop:{aa:-1}})
+-----------
+用户管理
+在mongodb中有一个admin库，涉及到服务器配置层面操作，先要切换到admin数据
+use admin 相当于管理员模式
+
+mongodb用户是以数据库为单位建立的，每个数据库有自己的管理员
+
+我们在设置用户时候需先在admin数据库下建立管理员--这个管理员相当于超级管理员
+
+添加用户db.addUser('用户名'，'密码'，是否只读)
+mongodb3.2没有上面那个命令。用下面的命令
+db.createUser({user:'sa',pwd:'passwd',roles:['readWrite','dbAdmin']})
+Successfully added user: { "user" : "sa", "roles" : [ "readWrite", "dbAdmin" ] 
+注意：添加用户后我们能再次退出后登陆，依然可以直接登陆数据库？
+原因：mongodb启动时候，默认不需要要验证，类似mysql的--skip-grant-table
+要让用户生效，需要启动服务时候指定--auth选项
+杀进程后再重启加参数
+--------------------------------------------
+connecting to: 127.0.0.1/admin
+> show tables
+2015-12-15T10:35:56.696+0800 E QUERY    Error: listCollections failed: {
+        "ok" : 0,
+        "errmsg" : "not authorized on admin to execute command { listCollections: 1.0 }",
+        "code" : 13
+}
+说明验证成功
+> use admin
+switched to db admin
+> db.auth('sa','passwd')   认证
+1
+可以给指定数据库加用户
+---------------这一块是有点问题的3.2，具体可以参照备注---------------------------
+http://ibruce.info/2015/03/03/mongodb3-auth/
