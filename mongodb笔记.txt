@@ -80,3 +80,15 @@ switched to db admin
 可以给指定数据库加用户
 ---------------这一块是有点问题的3.2，具体可以参照备注---------------------------
 http://ibruce.info/2015/03/03/mongodb3-auth/
+
+修改密码
+> use test
+switched to db test
+> db.auth('test','test')
+1
+> db.changeUserPassword('test','20110930')
+> db.auth('test','20110930')
+1
+
+删除用户
+db.removeUser('test')
